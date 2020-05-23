@@ -113,3 +113,8 @@ Plotbics(ratings_314)
 PlotGmm(ratings_314,ratings_314_5stars,4)
 Plotbics(ratings_444)
 PlotGmm(ratings_444,ratings_444_5stars,3)
+
+#Movie Recommend
+#Change Minimum Score of Unseen Movie
+#Validation with some del movie in 5 star
+
