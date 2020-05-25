@@ -26,6 +26,8 @@ from keras.models import Model
 from sklearn import preprocessing
 from sklearn.preprocessing import OrdinalEncoder
 
+from matplotlib import pyplot as plt
+
 csv = pd.read_csv(r"C:\Users\user\Downloads\Assignment_1B_Data\Data\Q3\Q3\Train_Data\Train.csv")
 csv_test = pd.read_csv(r"C:\Users\user\Downloads\Assignment_1B_Data\Data\Q3\Q3\Test_Data\Test.csv")
 print(csv.head())
@@ -227,6 +229,24 @@ multi_model = multi_model(loss_list,test_metrics,dd)
 multi_model.summary()
 
 callback = [tf.keras.callbacks.EarlyStopping(monitor='loss', patience=3)]
-multi_model.fit(X_train,y_train,batch_size = 32,epochs = 10, verbose = 2, callbacks = callback,validation_data=(X_val, y_val) )
+model_history = multi_model.fit(X_train,y_train,batch_size = 32,epochs = 5, verbose = 0, callbacks = callback,validation_data=(X_val, y_val) )
+accuracyNames = ['gender_accuracy', 'pose_accuracy', 'tortyp_accuracy', 'torcol_accuracy', 'torcol2_accuracy', 'torcol3_accuracy',
+       'tortex_accuracy', 'legtyp_accuracy', 'legcol_accuracy', 'legcol2_accuracy', 'legcol3_accuracy', 'legtex_accuracy',
+       'luggage_accuracy']
+plt.style.use("ggplot")
+(fig, ax) = plt.subplots(6, 1, figsize=(8, 8))
+# loop over the accuracy names
+for (i, l) in enumerate(accuracyNames):
+	# plot the loss for both the training and validation data
+	ax[i].set_title("Accuracy for {}".format(l))
+	ax[i].set_xlabel("Epoch #")
+	ax[i].set_ylabel("Accuracy")
+	ax[i].plot(np.arange(0, 5), model_history.history[l], label=l)
+	ax[i].plot(np.arange(0, 5), model_history.history["val_" + l],
+		label="val_" + l)
+	ax[i].legend()
 score = multi_model.evaluate(X_test,y_test,verbose = 0)
 print(dict(zip(multi_model.metrics_names, score)))
+
+
+
