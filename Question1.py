@@ -28,10 +28,11 @@ from sklearn.manifold import TSNE
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import plot_confusion_matrix
 
-test_a = '/content/drive/My Drive/Colab Notebooks/VIPeR/Test/cam_a/*.bmp'
-test_b = '/content/drive/My Drive/Colab Notebooks/VIPeR/Test/cam_b/*.bmp'
-train_a = "/content/drive/My Drive/Colab Notebooks/VIPeR/Train/cam_a/*.bmp"
-train_b = "/content/drive/My Drive/Colab Notebooks/VIPeR/Train/cam_b/*.bmp"
+test_a = r'C:\Users\user\Downloads\Assignment_1B_Data\Data\Q1\VIPeR\Test\cam_a\*.bmp'
+test_b = r'C:\Users\user\Downloads\Assignment_1B_Data\Data\Q1\VIPeR\Test\cam_b\*.bmp'
+train_a = r"C:\Users\user\Downloads\Assignment_1B_Data\Data\Q1\VIPeR\Train\cam_a\*.bmp"
+train_b = r"C:\Users\user\Downloads\Assignment_1B_Data\Data\Q1\VIPeR\Train\cam_b\*.bmp"
+
 
 files = glob.glob(test_a)
 files.sort()
@@ -81,7 +82,7 @@ for f in files:
 files = glob.glob(train_b)
 files.sort()
 
-#data_train_b = []
+data_train_b = []
 for f in files:
     d = {}
     head, tail = os.path.split(f)
@@ -89,7 +90,7 @@ for f in files:
     if (len(parts) == 2):
         d['label'] = int(parts[0])
         d['image'] = cv2.imread(f)
-        data_train_a.append(d)
+        data_train_b.append(d)
     else:
         print('Could not load: ' + f + '! Incorrectly formatted filename')
 
@@ -99,33 +100,42 @@ test_a_Y = numpy.array([d['label'] for d in data_test_a])
 test_b_X = numpy.array([d['image'] for d in data_test_b])/255
 test_b_Y = numpy.array([d['label'] for d in data_test_b])
 
+test_X = numpy.concatenate((test_a_X, test_b_X), axis=0)
+test_Y = numpy.concatenate((test_a_Y, test_b_Y), axis=0)
+
 train_a_X = numpy.array([d['image'] for d in data_train_a])/255
 train_a_Y = numpy.array([d['label'] for d in data_train_a])
 
-#train_b_X = numpy.array([d['image'] for d in data_train_b])/255
-#train_b_Y = numpy.array([d['label'] for d in data_train_b])
+train_b_X = numpy.array([d['image'] for d in data_train_b])/255
+train_b_Y = numpy.array([d['label'] for d in data_train_b])
 
+train_X = numpy.concatenate((train_a_X, train_b_X), axis=0)
+train_Y = numpy.concatenate((train_a_Y, train_b_Y), axis=0)
+
+print(train_X.shape)
 fig = plt.figure(figsize=[10, 8])
 for i in range(10):
-    ax = fig.add_subplot(4, 10, i + 1)
-    ax.imshow(test_a_X[i,:,:,0])
+    ax = fig.add_subplot(2, 10, i + 1)
+    ax.imshow(train_X[i,:,:,0])
 for i in range(10):
-    ax = fig.add_subplot(4, 10, i + 11)
-    ax.imshow(test_b_X[i,:,:,0]) 
-for i in range(10):
-    ax = fig.add_subplot(4, 10, i + 21)
-    ax.imshow(train_a_X[i,:,:,0]) 
-# for i in range(10):
-#     ax = fig.add_subplot(4, 10, i + 31)
-#     ax.imshow(train_b_X[i,:,:,0])
+     ax = fig.add_subplot(2, 10, i + 11)
+     ax.imshow(test_X[i,:,:,0])
 
 """# Part 1"""
+
+print(numpy.min(train_a_X),numpy.max(train_a_X))
+train_a_X = train_a_X/255.0
+train_b_X = train_b_X/255.0
+test_a_X = test_a_X/255.0
+test_b_X = test_b_X/255.0
+print(numpy.min(train_a_X),numpy.max(train_a_X))
+print(train_a_X.shape)
 
 nsamples, nx, ny, nz = train_a_X.shape
 train_a_X_reshape = train_a_X.reshape((nsamples,nx*ny*nz))
 
-# nsamples, nx, ny, nz = train_b_X.shape
-# train_b_X_reshape = train_b_X.reshape((nsamples,nx*ny*nz))
+nsamples, nx, ny, nz = train_b_X.shape
+train_b_X_reshape = train_b_X.reshape((nsamples,nx*ny*nz))
 
 nsamples, nx, ny, nz = test_a_X.shape
 test_a_X_reshape = test_a_X.reshape((nsamples,nx*ny*nz))
@@ -133,42 +143,37 @@ test_a_X_reshape = test_a_X.reshape((nsamples,nx*ny*nz))
 nsamples, nx, ny, nz = test_b_X.shape
 test_b_X_reshape = test_b_X.reshape((nsamples,nx*ny*nz))
 
-pca = decomposition.PCA()
-pca.fit(train_a_X_reshape)
-transformed = pca.transform(test_a_X_reshape)
-transformed_test = pca.transform(test_b_X_reshape)
+pca_a = decomposition.PCA()
+pca_a.fit(train_a_X_reshape)
 
-cumulative_sum = numpy.cumsum(pca.explained_variance_ratio_, axis=0)
-top1 = numpy.where(cumulative_sum > 0.99)[0][0]
-top5 = numpy.where(cumulative_sum > 0.95)[0][0]
-top10 = numpy.where(cumulative_sum > 0.9)[0][0]
+pca_b = decomposition.PCA()
+pca_b.fit(train_b_X_reshape)
 
 
-transformed_train_1 = transformed[:, 0:top1]
-transformed_test_1 = transformed_test[:, 0:top1]
-transformed_train_5 = transformed[:, 0:top5]
-transformed_test_5 = transformed_test[:, 0:top5]
-transformed_train_10 = transformed[:, 0:top10]
-transformed_test_10 = transformed_test[:, 0:top10]
+print(pca_a.explained_variance_ratio_)
+print(pca_b.explained_variance_ratio_)
 
-def eval_model(model, X_train, Y_train, X_test, Y_test):
-    fig = plt.figure(figsize=[25, 8])
-    ax = fig.add_subplot(1, 2, 1)
-    conf = plot_confusion_matrix(model, X_train, Y_train, normalize='true', ax=ax)
-    conf.ax_.set_title('Training Set Performance');
-    ax = fig.add_subplot(1, 2, 2)
-    conf = plot_confusion_matrix(model, X_test, Y_test, normalize='true', ax=ax)
-    conf.ax_.set_title('Test Set Performance');
-    pred = model.predict(X_test)
-    print('Test Accuracy: ' + str(sum(pred == Y_test)/len(Y_test)))
+transformed_train_a = pca_a.transform(train_a_X_reshape)
+transformed_train_b = pca_b.transform(train_b_X_reshape)
+transformed_test_a = pca_a.transform(test_a_X_reshape)
+transformed_test_b = pca_b.transform(test_b_X_reshape)
 
-cknn_95 = KNeighborsClassifier(n_neighbors=10, weights='distance')
-cknn_95.fit(transformed_train_10, test_a_Y)
-eval_model(cknn_95, transformed_train_10, test_a_Y, transformed_test_10, test_b_Y)
+cumulative_sum = numpy.cumsum(pca_a.explained_variance_ratio_, axis=0)
+top5 = numpy.where(cumulative_sum > 0.9)[0][0]
+
+transformed_train_5 = transformed_train_a[:, 0:top5]
+transformed_test_5 = transformed_test_a[:, 0:top5]
+
+
+cumulative_sum = numpy.cumsum(pca_b.explained_variance_ratio_, axis=0)
+top5 = numpy.where(cumulative_sum > 0.9)[0][0]
+
+transformed_train_b5 = transformed_train_b[:, 0:top5]
+transformed_test_b5 = transformed_test_b[:, 0:top5]
 
 """# Part 2"""
 
-def GetSiameseData(imgs, labels, batch_size):
+def GetSiameseData(imgs, labels, batch_size,imgs_b):
 
     image_a = numpy.zeros((batch_size, numpy.shape(imgs)[1], numpy.shape(imgs)[2], numpy.shape(imgs)[3]));
     image_b = numpy.zeros((batch_size, numpy.shape(imgs)[1], numpy.shape(imgs)[2], numpy.shape(imgs)[3]));
@@ -191,9 +196,9 @@ def GetSiameseData(imgs, labels, batch_size):
                 idx2 = random.randint(0, len(imgs) - 1)
 
         image_a[i, :, :, :] = imgs[idx1,:,:,:]
-        image_b[i, :, :, :] = imgs[idx2,:,:,:]
+        image_b[i, :, :, :] = imgs_b[idx2,:,:,:]
         label[i] = l
-
+#Genarate pair data base on batch_size
     return [image_a, image_b], label
 
 def GetTripletData(imgs, labels, batch_size):
@@ -225,10 +230,11 @@ def TripleGenerator(imgs, labels, batch_size):
         [image_a, image_b, image_c] = GetTripletData(imgs, labels, batch_size)
         yield [image_a, image_b, image_c], None
         
-test = TripleGenerator(test_a_X, test_a_Y, 9)
+test = TripleGenerator(test_X, test_Y, 10)
 x, _ = next(test)
 
 fig = plt.figure(figsize=[25, 10])
+#plot the graph using yield python genarator set the title 
 for i in range(9):
     ax = fig.add_subplot(3, 9, i*3 + 1)
     ax.imshow(x[0][i,:,:,0])
@@ -278,7 +284,7 @@ def vgg_net(inputs, filters, fc, spatial_dropout = 0.0, dropout = 0.0):
     return x
 
 embedding_size = 32
-dummy_input = keras.Input((32, 32, 1))
+dummy_input = keras.Input((128, 48, 3))
 base_network = vgg_net(dummy_input, [8, 16, 32], [256], 0.2, 0)
 embedding_layer = layers.Dense(embedding_size, activation=None)(base_network)
 base_network = keras.Model(dummy_input, embedding_layer, name='SiameseBranch')
@@ -304,9 +310,9 @@ class TripletLossLayer(layers.Layer):
         self.add_loss(loss)
         return loss
     
-input_anchor = keras.Input((32, 32, 1), name='Anchor')
-input_positive = keras.Input((32, 32, 1), name='Positive')
-input_negative = keras.Input((32, 32, 1), name='Negative')
+input_anchor = keras.Input((128, 48, 3), name='Anchor')
+input_positive = keras.Input((128, 48, 3), name='Positive')
+input_negative = keras.Input((128, 48, 3), name='Negative')
 
 embedding_anchor = base_network(input_anchor)
 embedding_positive = base_network(input_positive)
@@ -320,8 +326,42 @@ triplet_network.summary()
 
 triplet_network.compile(optimizer=keras.optimizers.RMSprop())
 
-batch_size = 20
-training_gen = TripleGenerator(test_a_X, test_a_Y, batch_size)
-triplet_test_x = GetTripletData(test_b_X, test_b_Y, 1000)
+batch_size = 256
+training_gen = TripleGenerator(train_X, train_Y, batch_size)
+triplet_test_x = GetTripletData(test_X, test_Y, batch_size)
 
-triplet_network.fit(training_gen, steps_per_epoch = 20, epochs=20, validation_data=(triplet_test_x, None))
+triplet_network.fit(training_gen, steps_per_epoch = 20, epochs=10, validation_data=(triplet_test_x, None))
+
+def ComputeDistance(x, y):
+    x = K.l2_normalize(x, axis=1)
+    y = K.l2_normalize(y, axis=1)
+    dist = K.sum(K.square(x - y), axis=-1)
+    return dist
+
+x = GetTripletData(test_X, test_Y, 9)
+anchor_embedding = base_network.predict(x[0])
+positive_embedding = base_network.predict(x[1])
+negative_embedding = base_network.predict(x[2])
+pos_dists = ComputeDistance(anchor_embedding, positive_embedding)
+neg_dists = ComputeDistance(anchor_embedding, negative_embedding)
+
+fig = plt.figure(figsize=[25, 9])
+for i in range(9):
+    ax = fig.add_subplot(3, 9, i*3 + 1)
+    ax.imshow(x[0][i,:,:,0])
+    ax.set_title('Anchor ' + str(i))
+    
+    ax = fig.add_subplot(3, 9, i*3 + 2)
+    ax.imshow(x[1][i,:,:,0])    
+    ax.set_title('Pos: ' + '%1.2f' % float(pos_dists[i]))
+    
+    ax = fig.add_subplot(3, 9, i*3 + 3)
+    ax.imshow(x[2][i,:,:,0])    
+    ax.set_title('Neg: ' + '%1.2f' % float(neg_dists[i]))
+
+embeddings = base_network.predict(train_X)
+tsne_embeddings = TSNE(random_state=4).fit_transform(embeddings)
+fig = plt.figure(figsize=[12, 12])
+ax = fig.add_subplot(1, 1, 1)
+ax.scatter(tsne_embeddings[:,0], tsne_embeddings[:,1], c = train_Y.flatten());
+
