@@ -112,7 +112,6 @@ train_b_Y = numpy.array([d['label'] for d in data_train_b])
 train_X = numpy.concatenate((train_a_X, train_b_X), axis=0)
 train_Y = numpy.concatenate((train_a_Y, train_b_Y), axis=0)
 
-print(train_X.shape)
 fig = plt.figure(figsize=[10, 8])
 for i in range(10):
     ax = fig.add_subplot(2, 10, i + 1)
@@ -124,10 +123,6 @@ for i in range(10):
 """# Part 1"""
 
 print(numpy.min(train_a_X),numpy.max(train_a_X))
-train_a_X = train_a_X/255.0
-train_b_X = train_b_X/255.0
-test_a_X = test_a_X/255.0
-test_b_X = test_b_X/255.0
 print(numpy.min(train_a_X),numpy.max(train_a_X))
 print(train_a_X.shape)
 
